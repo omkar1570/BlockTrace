@@ -1,4 +1,4 @@
-
+import time
 from flask import Flask, render_template, request, redirect, url_for, flash
 from blockchain import supply_chain
 
@@ -8,10 +8,13 @@ app.secret_key = "blocktrace-demo-secret-key"
 
 @app.template_filter("datetimeformat")
 def datetimeformat(value):
-    return time.strftime(
-        "%d %b %Y, %I:%M:%S %p",
-        time.localtime(value)
-    )
+    try:
+        return time.strftime(
+            "%d %b %Y, %I:%M:%S %p",
+            time.localtime(float(value))
+        )
+    except (TypeError, ValueError, OverflowError):
+        return str(value)
 
 
 
@@ -80,6 +83,10 @@ def track():
 
     if request.method == "POST":
         searched_id = request.form.get("product_id", "").strip()
+    else:
+        searched_id = request.args.get("product_id", "").strip()
+
+    if searched_id:
         product = supply_chain.products.get(searched_id)
         history = supply_chain.get_product_history(searched_id)
 

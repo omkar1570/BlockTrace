@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
@@ -519,6 +518,19 @@ tbody tr:hover {
     color: var(--teal);
     font-size: 10px;
     font-weight: 600;
+}
+
+.product-link {
+    color: var(--teal);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: rgba(32, 213, 189, 0.4);
+    transition: 0.2s;
+}
+
+.product-link:hover {
+    color: #65f0dc;
+    text-decoration-color: #65f0dc;
 }
 
 footer {
