@@ -1,0 +1,222 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlockTrace | Supply Chain Tracking</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<header class="topbar">
+    <a class="brand" href="/">
+        <span class="brand-icon">B</span>
+        <span>Block<span class="accent">Trace</span>
+            <small>BLOCKCHAIN SUPPLY CHAIN</small>
+        </span>
+    </a>
+    <span class="network-status"><span class="dot"></span> Network Active</span>
+</header>
+
+<main class="container">
+    <section class="welcome">
+        <div>
+            <p class="eyebrow">SUPPLY CHAIN INTELLIGENCE</p>
+            <h1>Track every step.<br><span>Trust every block.</span></h1>
+            <p class="subtitle">A transparent view of your product journey, secured with blockchain technology.</p>
+        </div>
+        <a href="#ledger" class="outline-btn">View Blockchain ↗</a>
+    </section>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <section class="stats">
+        <div class="stat-card">
+            <span class="stat-label">REGISTERED PRODUCTS</span>
+            <strong>{{ products|length }}</strong>
+            <span class="stat-note">Unique product IDs</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">TOTAL BLOCKS</span>
+            <strong>{{ chain|length }}</strong>
+            <span class="stat-note">Recorded ledger events</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">LEDGER INTEGRITY</span>
+            <strong class="{{ 'valid' if chain_valid else 'invalid' }}">
+                {{ 'Verified' if chain_valid else 'Warning' }}
+            </strong>
+            <span class="stat-note">Hash-link validation</span>
+        </div>
+    </section>
+
+    <section class="section-grid">
+        <div class="panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">GET STARTED</p>
+                    <h2>Register a Product</h2>
+                </div>
+                <span class="heading-icon">＋</span>
+            </div>
+            <form action="/register" method="POST">
+                <label>Product ID</label>
+                <input name="product_id" placeholder="e.g. PROD-1001" required>
+
+                <label>Product Name</label>
+                <input name="name" placeholder="e.g. Organic Coffee" required>
+
+                <label>Category</label>
+                <input name="category" placeholder="e.g. Food & Beverage" required>
+
+                <label>Manufacturer</label>
+                <input name="manufacturer" placeholder="Company name" required>
+
+                <label>Origin Location</label>
+                <input name="origin" placeholder="e.g. Pune, Maharashtra" required>
+
+                <button class="primary-btn" type="submit">Register Product <span>→</span></button>
+            </form>
+        </div>
+
+        <div class="panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">LIVE LOGISTICS</p>
+                    <h2>Update Shipment</h2>
+                </div>
+                <span class="heading-icon">↗</span>
+            </div>
+            <form action="/update" method="POST">
+                <label>Product ID</label>
+                <input name="product_id" placeholder="Enter registered product ID" required>
+
+                <label>Shipment Status</label>
+                <select name="status" required>
+                    <option value="">Select current status</option>
+                    <option>Manufactured</option>
+                    <option>Packed</option>
+                    <option>In Transit</option>
+                    <option>At Warehouse</option>
+                    <option>Out for Delivery</option>
+                    <option>Delivered</option>
+                </select>
+
+                <label>Current Location</label>
+                <input name="location" placeholder="e.g. Mumbai Distribution Centre" required>
+
+                <div class="info-box">
+                    <span>🔗</span>
+                    <p>Each update creates a new block linked to the previous block using its hash.</p>
+                </div>
+
+                <button class="primary-btn" type="submit">Record Shipment Update <span>→</span></button>
+            </form>
+        </div>
+    </section>
+
+    <section class="panel tracking-panel" id="tracking">
+        <div class="panel-heading">
+            <div>
+                <p class="eyebrow">END-TO-END VISIBILITY</p>
+                <h2>Track a Product</h2>
+                <p class="subtitle">Look up a product to inspect its recorded journey.</p>
+            </div>
+        </div>
+        <form action="/track" method="POST" class="search-form">
+            <input name="product_id" value="{{ searched_id|default('', true) }}" placeholder="Enter Product ID (e.g. PROD-1001)" required>
+            <button class="primary-btn" type="submit">Track Product →</button>
+        </form>
+
+        {% if tracked_product %}
+            <div class="product-summary">
+                <p class="eyebrow">PRODUCT DETAILS</p>
+                <h3>{{ tracked_product.name }}</h3>
+                <p><strong>ID:</strong> {{ tracked_product.product_id }}</p>
+                <p><strong>Category:</strong> {{ tracked_product.category }}</p>
+                <p><strong>Manufacturer:</strong> {{ tracked_product.manufacturer }}</p>
+                <p><strong>Origin:</strong> {{ tracked_product.origin }}</p>
+            </div>
+
+            <h3 class="history-title">Journey History</h3>
+            {% if history %}
+                <div class="timeline">
+                    {% for block in history %}
+                        <div class="timeline-item">
+                            <span class="timeline-dot"></span>
+                            <div class="timeline-content">
+                                <div class="timeline-top">
+                                    <h4>{{ block.status }}</h4>
+                                    <span class="block-number">BLOCK #{{ block.index }}</span>
+                                </div>
+                                <p>📍 {{ block.location }}</p>
+                                <small>{{ block.timestamp|int|datetimeformat }}</small>
+                                <details>
+                                    <summary>View block hashes</summary>
+                                    <p><strong>Hash:</strong><code>{{ block.hash }}</code></p>
+                                    <p><strong>Previous hash:</strong><code>{{ block.previous_hash }}</code></p>
+                                </details>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No history recorded for this product yet.</p>
+            {% endif %}
+        {% endif %}
+    </section>
+
+    <section class="panel" id="ledger">
+        <div class="panel-heading">
+            <div>
+                <p class="eyebrow">TRANSPARENT RECORDS</p>
+                <h2>Blockchain Ledger</h2>
+                <p class="subtitle">Every block links to its predecessor through a cryptographic hash.</p>
+            </div>
+            <a href="/verify" target="_blank" class="outline-btn">Verify Chain ↗</a>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>BLOCK</th>
+                        <th>PRODUCT ID</th>
+                        <th>STATUS</th>
+                        <th>LOCATION</th>
+                        <th>HASH</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for block in chain|reverse %}
+                        <tr>
+                            <td><span class="block-number">#{{ block.index }}</span></td>
+                            <td>{{ block.product_id }}</td>
+                            <td><span class="status-tag">{{ block.status }}</span></td>
+                            <td>{{ block.location }}</td>
+                            <td><code>{{ block.hash[:16] }}...</code></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <footer>
+        <div class="brand footer-brand">
+            <span class="brand-icon">B</span>
+            <span>Block<span class="accent">Trace</span></span>
+        </div>
+        <p>Educational blockchain prototype · Built with Flask and SHA-256</p>
+    </footer>
+</main>
+
+</body>
+</html>
